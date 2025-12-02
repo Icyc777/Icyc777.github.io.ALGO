@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Граф 11 — Дейкстра + XML</title>
+
+<style>
+    body { background: #222; color: white; text-align: center; font-family: Arial; }
+    canvas { background: #333; border: 1px solid #555; margin-top: 20px; }
+    button { padding: 10px 20px; margin: 15px; font-size: 18px; }
+</style>
+</head>
+
+<body>
+
+<h2>Алгоритм Дейкстри (Граф №11 з XML)</h2>
+
+<button onclick="startDijkstra()">Показати шлях 8 → 4</button>
+
+<canvas id="graph" width="800" height="500"></canvas>
+
+<script>
+let points = {};
+let edges = [];
+let graph = {};
+
+async function loadXML() {
+    let response = await fetch("graph11.xml");
+    let text = await response.text();
+    let parser = new DOMParser();
+    let xml = parser.parseFromString(text, "text/xml");
+
+    xml.querySelectorAll("point").forEach(p => {
+        points[p.getAttribute("id")] = {
+            x: parseInt(p.getAttribute("x")),
+            y: parseInt(p.getAttribute("y"))
+        };
+    });
+
+    xml.querySelectorAll("line").forEach(l => {
+        let u = l.getAttribute("from");
+        let v = l.getAttribute("to");
+        let w = parseInt(l.getAttribute("weight"));
+        edges.push([u, v, w]);
+    });
+
+    // створюємо список суміжності
+    for (let i = 1; i <= 9; i++) graph[i] = [];
+    edges.forEach(([u, v, w]) => {
+        graph[u].push({node: v, weight: w});
+        graph[v].push({node: u, weight: w});
+    });
+
+    drawGraph();
+}
+
+loadXML();
+
+// ==========================
+// 2) CANVAS МАЛЮВАННЯ
+// ==========================
+const canvas = document.getElementById("graph");
+const ctx = canvas.getContext("2d");
+
+function drawGraph(highlight = []) {
+    ctx.clearRect(0, 0, 800, 500);
+
+    edges.forEach(([u,v,w])=>{
+        let isRed = highlight.some(h => (h[0] == u && h[1] == v) || (h[0] == v && h[1] == u));
+
+        ctx.strokeStyle = isRed ? "red" : "white";
+        ctx.lineWidth = isRed ? 4 : 2;
+
+        let a = points[u], b = points[v];
+
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+
+        ctx.fillStyle = "white";
+        ctx.fillText(w, (a.x+b.x)/2, (a.y+b.y)/2 - 5);
+    });
+
+    // вершини
+    for (let i = 1; i <= 9; i++) {
+        ctx.fillStyle = "#ddd";
+        ctx.beginPath();
+        ctx.arc(points[i].x, points[i].y, 20, 0, Math.PI*2);
+        ctx.fill();
+
+        ctx.fillStyle = "black";
+        ctx.fillText(i, points[i].x - 4, points[i].y + 4);
+    }
+}
+
+// ==========================
+// 3) ДЕЙКСТРА
+// ==========================
+function dijkstra(start) {
+    let dist = {}, prev = {}, visited = {};
+
+    for (let i = 1; i <= 9; i++) {
+        dist[i] = Infinity;
+        prev[i] = null;
+        visited[i] = false;
+    }
+
+    dist[start] = 0;
+
+    for (let i = 1; i <= 9; i++) {
+        let u = null;
+        for (let v = 1; v <= 9; v++)
+            if (!visited[v] && (u === null || dist[v] < dist[u])) u = v;
+
+        visited[u] = true;
+
+        graph[u].forEach(e => {
+            let alt = dist[u] + e.weight;
+            if (alt < dist[e.node]) {
+                dist[e.node] = alt;
+                prev[e.node] = u;
+
+                // анімація
+                drawGraph([[u, e.node]]);
+            }
+        });
+    }
+
+    return prev;
+}
+
+// ==========================
+// 4) Відновлення шляху
+// ==========================
+function getPath(prev, t) {
+    let path = [];
+    while (t !== null) {
+        path.push(t);
+        t = prev[t];
+    }
+    return path.reverse();
+}
+
+// ==========================
+// 5) Запуск + Анімація
+// ==========================
+async function startDijkstra() {
+    let prev = dijkstra(8);
+    let path = getPath(prev, 4);
+
+    let edgesToDraw = [];
+
+    for (let i = 0; i < path.length - 1; i++) {
+        edgesToDraw.push([path[i], path[i+1]]);
+        drawGraph(edgesToDraw);
+        await new Promise(r => setTimeout(r, 700)); // пауза
+    }
+
+    alert("Шлях 8 → 4: " + path.join(" → "));
+}
+
+</script>
+
+</body>
+</html>
