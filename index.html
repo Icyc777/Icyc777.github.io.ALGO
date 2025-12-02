@@ -106,7 +106,7 @@ async function startDijkstra() {
     for (let i = 0; i < path.length - 1; i++) {
         edgesToDraw.push([path[i], path[i+1]]);
         drawGraph(edgesToDraw);
-        await new Promise(r => setTimeout(r, 700)); // пауза
+        await new Promise(r => setTimeout(r, 700));
     }
     alert("Шлях 8 → 4: " + path.join(" → "));
 }
@@ -114,4 +114,5 @@ async function startDijkstra() {
 
 </body>
 </html>
+
 
