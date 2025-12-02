@@ -25,13 +25,14 @@
             <line id="9"  from="1" to="8" weight="19"/>
             <line id="10" from="6" to="8" weight="26"/>
             <line id="11" from="6" to="9" weight="34"/>
-            <line id="11.2" from="3" to="5" weight="34"/>
             <line id="12" from="6" to="7" weight="5"/>
             <line id="13" from="5" to="7" weight="32"/>
             <line id="14" from="4" to="7" weight="10"/>
             <line id="15" from="7" to="9" weight="10"/>
             <line id="16" from="9" to="8" weight="32"/>
+            <line id="17" from="3" to="5" weight="34"/>
         </lines>
     </graph>
 
 </graph_data>
+
